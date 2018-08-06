@@ -1,20 +1,20 @@
-const createStore = require('./fakeStoreSync')
+const createStore = require('./fakeStoreAsync')
 
 const store = createStore()
 
 const players = {
-  [Symbol.iterator]() {
+  [Symbol.asyncIterator]() {
     let i = 0
     return {
-      next() {
+      next: async function() {
         i++
-        const player = store.get('player', i)
+        const player = await store.get('player', i)
         
         if(!player) {
           return { done: true }
         }
 
-        player.teams = store.get('teams', i)
+        player.teams = await store.get('teams', i)
         return {
           value: player,
           done: false,
@@ -24,6 +24,8 @@ const players = {
   }
 }
 
-for (const player of players) {
-  console.log(player)
-}
+;(async function() {
+  for await (const player of players) {
+    console.log(player)
+  }
+})()
